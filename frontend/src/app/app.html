@@ -1,14 +1,14 @@
 <h1 style="font-size: 72px; color: green;"> Expenses </h1>
 
 <ul>
-    <!-- @for (expense of expenses; track expense.id) {
+    @for (expense of expenses; track expense.id) {
     <li>
         Description: {{ expense.description }}
         Amount: {{ expense.amount }}
     </li>
     } @empty {
     <li>There are no Expenses.</li>
-    } -->
+    }
 
     <button type="button" (click)="addDummy()" >
         Add Expense

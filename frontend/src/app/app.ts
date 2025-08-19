@@ -10,24 +10,21 @@ import { Expense, ExpenseService } from './services/expense';
   styleUrls: ['./app.scss']
 })
 export class App implements OnInit {
-  //expenses: Expense[] = [];
-  expenseService = inject(ExpenseService);
-  constructor() {
-    
-  }
+  private expenses: Expense[] = [];
+  private expenseService = inject(ExpenseService);
 
   ngOnInit() {
-    // this.loadExpenses();
+    this.loadExpenses();
   }
 
   loadExpenses() {
-    //this.expenseService.getExpenses().subscribe(data => {
-    // this.expenses = data;
-    //});
+    this.expenseService.getExpenses().subscribe(data => {
+    this.expenses = data;
+    });
   }
 
   addDummy() {
- //   const dummy: Expense = { description: 'Coffee', amount: 3.50 };
-  //  this.expenseService.addExpense(dummy).subscribe(() => this.loadExpenses());
+   const dummy: Expense = { description: 'Coffee', amount: 3.50 };
+   this.expenseService.addExpense(dummy).subscribe(() => this.loadExpenses());
   }
 }
