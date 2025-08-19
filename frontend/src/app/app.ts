@@ -1,12 +1,33 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { Expense, ExpenseService } from './services/expense';
+
 
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrls: ['./app.scss']
 })
-export class App {
-  protected readonly title = signal('frontend');
+export class App implements OnInit {
+  //expenses: Expense[] = [];
+  expenseService = inject(ExpenseService);
+  constructor() {
+    
+  }
+
+  ngOnInit() {
+    // this.loadExpenses();
+  }
+
+  loadExpenses() {
+    //this.expenseService.getExpenses().subscribe(data => {
+    // this.expenses = data;
+    //});
+  }
+
+  addDummy() {
+ //   const dummy: Expense = { description: 'Coffee', amount: 3.50 };
+  //  this.expenseService.addExpense(dummy).subscribe(() => this.loadExpenses());
+  }
 }
