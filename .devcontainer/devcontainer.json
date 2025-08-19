@@ -1,0 +1,10 @@
+{
+  "name": "Angular + Java 17",
+  "image": "mcr.microsoft.com/devcontainers/java:17",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "postCreateCommand": "java -version && node -v && npm -v"
+}
