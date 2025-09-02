@@ -1,4 +1,4 @@
-package com.example.demo.config;
+package com.example.demo;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +26,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
+                // Allow access to Angular static resources
+                .requestMatchers(  "/**", "/").permitAll()
                 .requestMatchers("/auth/login", "/auth/callback", "/auth/status", "/h2-console/**").permitAll()
                 .requestMatchers("/expenses/**").authenticated()
                 .anyRequest().authenticated()
