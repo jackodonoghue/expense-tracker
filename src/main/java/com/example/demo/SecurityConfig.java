@@ -1,68 +1,64 @@
-package com.example.demo;
+package com.example.demo.config;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   ClientRegistrationRepository clientRegistrationRepository)
-            throws Exception {
-
-        // default resolver that Spring uses
-        DefaultOAuth2AuthorizationRequestResolver defaultResolver =
-                new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-
-        // wrap the resolver to log + customize
-        OAuth2AuthorizationRequestResolver customResolver = new OAuth2AuthorizationRequestResolver() {
-            @Override
-            public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-                return customize(defaultResolver.resolve(request));
-            }
-
-            @Override
-            public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-                return customize(defaultResolver.resolve(request, clientRegistrationId));
-            }
-
-            private OAuth2AuthorizationRequest customize(OAuth2AuthorizationRequest req) {
-                if (req == null) return null;
-
-                Map<String, Object> extraParams = new HashMap<>(req.getAdditionalParameters());
-                extraParams.put("providers", "uk-cs-mock uk-ob-all uk-oauth-all");
-
-                OAuth2AuthorizationRequest newReq = OAuth2AuthorizationRequest.from(req)
-                        .additionalParameters(extraParams)
-                        .build();
-
-                // 👇 log the actual URL that Spring will redirect to
-                System.out.println("🔗 OAuth2 Authorization Request URL: "
-                        + newReq.getAuthorizationRequestUri());
-
-                return newReq;
-            }
-        };
-
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-            .oauth2Login(oauth -> oauth
-                .authorizationEndpoint(authz -> authz
-                    .authorizationRequestResolver(customResolver)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers("/auth/login", "/auth/callback", "/auth/status", "/h2-console/**").permitAll()
+                .requestMatchers("/expenses/**").authenticated()
+                .anyRequest().authenticated()
+            )
+            .oauth2Client(oauth2 -> oauth2
+                .authorizationCodeGrant(codeGrant -> codeGrant
+                    .authorizationRequestResolver(authorizationRequestResolver(null))
                 )
-            );
+            )
+            .headers(headers -> {
+                headers.frameOptions(frameOptions -> frameOptions.disable()); // For H2 console
+            });
 
         return http.build();
+    }
+
+    @Bean
+    public OAuth2AuthorizationRequestResolver authorizationRequestResolver(
+            ClientRegistrationRepository clientRegistrationRepository) {
+        return new DefaultOAuth2AuthorizationRequestResolver(
+            clientRegistrationRepository, "/auth/login");
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:4200", "https://localhost:4200"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
