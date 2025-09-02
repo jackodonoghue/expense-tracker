@@ -20,7 +20,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = {"http://localhost:4200"})
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -55,8 +54,6 @@ public class AuthController {
                          .append("&providers=").append(URLEncoder.encode("uk-cs-mock uk-ob-all uk-oauth-all", StandardCharsets.UTF_8.toString()).replace("+", "%20"));
             String authUrl = authUrlBuilder.toString();
 
-            System.out.println("Generated TrueLayer auth URL: " + authUrl);
-
             logger.info("Generated TrueLayer auth URL for state: {}", state);
 
             return ResponseEntity.ok(new AuthResponse(authUrl, state, false, null));
@@ -82,7 +79,7 @@ public class AuthController {
 
         if (error != null) {
             logger.error("Authentication error: {}", error);
-            return new RedirectView("http://localhost:4200/login?error=" + URLEncoder.encode(error, StandardCharsets.UTF_8));
+            return new RedirectView("/login?error=" + URLEncoder.encode(error, StandardCharsets.UTF_8));
         }
 
         try {
@@ -95,11 +92,11 @@ public class AuthController {
             logger.info("Successfully authenticated user with state: {}", state);
 
             // Redirect to frontend dashboard with session ID
-            return new RedirectView("http://localhost:4200/dashboard?sessionId=" + state);
+            return new RedirectView("/dashboard?sessionId=" + state);
 
         } catch (Exception e) {
             logger.error("Error during token exchange", e);
-            return new RedirectView("http://localhost:4200/login?error=" + URLEncoder.encode("Authentication failed", StandardCharsets.UTF_8));
+            return new RedirectView("/login?error=" + URLEncoder.encode("Authentication failed", StandardCharsets.UTF_8));
         }
     }
 

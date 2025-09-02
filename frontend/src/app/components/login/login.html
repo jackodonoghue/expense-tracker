@@ -1,0 +1,39 @@
+
+    <div class="login-container">
+      <mat-card class="login-card">
+        <mat-card-header>
+          <mat-card-title>Expense Tracker</mat-card-title>
+          <mat-card-subtitle>Connect to your UK and Irish bank accounts</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <div *ngIf="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+
+          <div class="bank-info">
+            <h3>Supported Banks</h3>
+            <div class="bank-grid">
+              <div class="bank-item">HSBC</div>
+              <div class="bank-item">Barclays</div>
+              <div class="bank-item">Lloyds</div>
+              <div class="bank-item">Santander</div>
+              <div class="bank-item">AIB</div>
+              <div class="bank-item">Bank of Ireland</div>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card-actions>
+          <button 
+            mat-raised-button 
+            color="primary" 
+            (click)="login()" 
+            [disabled]="isLoading"
+            class="login-btn">
+            <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+            <span *ngIf="!isLoading">Connect Your Bank Account</span>
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
