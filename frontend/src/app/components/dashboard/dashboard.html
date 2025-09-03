@@ -1,1 +1,139 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+      <header class="dashboard-header">
+        <div class="header-content">
+          <h1>Your Banking Dashboard</h1>
+          <div class="header-actions">
+            <button mat-stroked-button (click)="refreshData()" [disabled]="isLoading">
+              <mat-icon>refresh</mat-icon>
+              Refresh
+            </button>
+            <button mat-button (click)="logout()">
+              <mat-icon>logout</mat-icon>
+              Logout
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner></mat-spinner>
+        <p>Loading your banking data...</p>
+      </div>
+
+      <div *ngIf="!isLoading" class="dashboard-content">
+        <mat-tab-group>
+          <!-- Balances Tab -->
+          <mat-tab label="Account Balances">
+            <div class="tab-content">
+              <div *ngIf="balances.length === 0" class="no-data">
+                No account balances available
+              </div>
+              <div class="balances-grid" *ngIf="balances.length > 0">
+                <mat-card *ngFor="let balance of balances" class="balance-card">
+                  <mat-card-header>
+                    <mat-card-title>{{ balance.accountName }}</mat-card-title>
+                    <mat-card-subtitle>{{ balance.currency }}</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="balance-info">
+                      <div class="balance-item">
+                        <span class="label">Current:</span>
+                        <span class="amount" [class.positive]="balance.current >= 0" [class.negative]="balance.current < 0">
+                          {{ balance.currency }} {{ balance.current | number:'1.2-2' }}
+                        </span>
+                      </div>
+                      <div class="balance-item">
+                        <span class="label">Available:</span>
+                        <span class="amount">{{ balance.currency }} {{ balance.available | number:'1.2-2' }}</span>
+                      </div>
+                      <div class="balance-item" *ngIf="balance.overdraft > 0">
+                        <span class="label">Overdraft:</span>
+                        <span class="amount">{{ balance.currency }} {{ balance.overdraft | number:'1.2-2' }}</span>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Accounts Tab -->
+          <mat-tab label="Accounts">
+            <div class="tab-content">
+              <div *ngIf="accounts.length === 0" class="no-data">
+                No accounts available
+              </div>
+              <div class="accounts-grid" *ngIf="accounts.length > 0">
+                <mat-card *ngFor="let account of accounts" class="account-card">
+                  <mat-card-header>
+                    <mat-card-title>{{ account.displayName }}</mat-card-title>
+                    <mat-card-subtitle>{{ account.provider }}</mat-card-subtitle>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="account-details">
+                      <p><strong>Type:</strong> {{ account.accountType }}</p>
+                      <p><strong>Currency:</strong> {{ account.currency }}</p>
+                      <p *ngIf="account.accountNumber"><strong>Account:</strong> {{ account.accountNumber }}</p>
+                      <p *ngIf="account.sortCode"><strong>Sort Code:</strong> {{ account.sortCode }}</p>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- Transactions Tab -->
+          <mat-tab label="Recent Transactions">
+            <div class="tab-content">
+              <div *ngIf="transactions.length === 0" class="no-data">
+                No transactions available
+              </div>
+              <div *ngIf="transactions.length > 0" class="transactions-container">
+                <mat-table [dataSource]="transactions" class="transactions-table">
+                  <ng-container matColumnDef="timestamp">
+                    <th mat-header-cell *matHeaderCellDef>Date</th>
+                    <td mat-cell *matCellDef="let transaction">
+                      {{ transaction.timestamp | date:'short' }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef>Description</th>
+                    <td mat-cell *matCellDef="let transaction">
+                      {{ transaction.description }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="category">
+                    <th mat-header-cell *matHeaderCellDef>Category</th>
+                    <td mat-cell *matCellDef="let transaction">
+                      {{ transaction.transactionCategory }}
+                    </td>
+                  </ng-container>
+
+                  <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef>Amount</th>
+                    <td mat-cell *matCellDef="let transaction">
+                      <span 
+                        class="amount"
+                        [class.positive]="transaction.amount >= 0"
+                        [class.negative]="transaction.amount < 0">
+                        {{ transaction.currency }} {{ transaction.amount | number:'1.2-2' }}
+                      </span>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </mat-table>
+              </div>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </div>
+  
