@@ -1,0 +1,28 @@
+logging:
+  level:
+    org.springframework.security: DEBUG
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          truelayer:
+            client-id: ${TRUELAYER_CLIENT_ID} 
+            client-secret: ${TRUELAYER_CLIENT_SECRET}
+            authorization-grant-type: authorization_code
+            redirect-uri: https://83a806f00a98.ngrok-free.app/auth/callback
+            scope: info,accounts,balance,transactions,offline_access
+        provider:
+          truelayer:
+            authorization-uri: https://auth.truelayer-sandbox.com
+            token-uri: https://auth.truelayer.com/connect/token
+            user-info-uri: https://api.truelayer.com/data/v1/info
+            jwk-set-uri: https://auth.truelayer.com/.well-known/jwks
+
+truelayer:
+  client-id: ${TRUELAYER_CLIENT_ID}
+  client-secret: ${TRUELAYER_CLIENT_SECRET}
+  environment: sandbox    # or 'live' for production
+  data-api-url: https://api.truelayer-sandbox.com/data/v1
+  auth-url: https://auth.truelayer-sandbox.com
+  redirect-uri: https://83a806f00a98.ngrok-free.app/auth/callback
