@@ -1,0 +1,14 @@
+Get Auth URL (Login)
+curl -X GET "https://redesigned-dollop-wrqxx95jxxj39vg-8080.app.github.dev/api/auth/login?sessionId=test-session-123" -H "Accept: application/json"
+
+Simulate OAuth Callback (Code Token Exchange)
+curl -v -X GET "https://redesigned-dollop-wrqxx95jxxj39vg-8080.app.github.dev/api/auth/callback?code=AUTH_CODE_RECEIVED&state=STATE_VALUE"
+
+Check Auth Status
+curl -X GET "https://redesigned-dollop-wrqxx95jxxj39vg-8080.app.github.dev/api/auth/status?sessionId=2becc9f3-46ab-47ee-bed9-8c77407a3bb8" -H "Accept: application/json"
+
+https://2d18fa81f368.ngrok-free.app/expenses/accounts?sessionId=sess_mxmq9dsw9mf4ap4fb
+
+https://2d18fa81f368.ngrok-free.app/expenses/transactions?sessionId=sess_mxmq9dsw9mf4ap4fb
+
+https://2d18fa81f368.ngrok-free.app/expenses/balances?sessionId=sess_mxmq9dsw9mf4ap4fb
