@@ -1,34 +1,33 @@
 package com.example.demo.service;
 
 import com.example.demo.model.Account;
-import java.util.ArrayList;
-import java.util.List;
+import com.example.demo.model.AccountDto;
+import com.example.demo.model.AccountsResponse;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TrueLayerService {
 
     private final WebClient webClient;
     private final OAuth2AuthorizedClientService authorizedClientService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public TrueLayerService(WebClient webClient,
-            OAuth2AuthorizedClientService authorizedClientService) {
+                            OAuth2AuthorizedClientService authorizedClientService) {
         this.webClient = webClient;
         this.authorizedClientService = authorizedClientService;
     }
 
-    public List<Account> getUserAccounts(OAuth2AuthenticationToken oauthToken) {
+    public Mono<List<Account>> getUserAccounts(OAuth2AuthenticationToken oauthToken) {
         String registrationId = oauthToken.getAuthorizedClientRegistrationId();
         String principalName = oauthToken.getName();
 
@@ -36,44 +35,30 @@ public class TrueLayerService {
                 .loadAuthorizedClient(registrationId, principalName);
 
         if (authorizedClient == null) {
-            throw new IllegalStateException("Authorized client not found for user: " + principalName);
+            return Mono.error(new IllegalStateException("Authorized client not found for user: " + principalName));
         }
 
-        OAuth2AccessToken accessToken = authorizedClient.getAccessToken();
+        String accessToken = authorizedClient.getAccessToken().getTokenValue();
 
-        // Use WebClient for non-blocking (reactive) requests
-        String response = webClient.get()
+        return webClient.get()
                 .uri("/accounts")
-                .header("Authorization", "Bearer " + accessToken.getTokenValue())
+                .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
-                .bodyToMono(String.class)
-                .block();
-
-        try {
-            JsonNode jsonResponse = objectMapper.readTree(response);
-            List<Account> accounts = new ArrayList<>();
-            for (JsonNode accountNode : jsonResponse.get("results")) {
-                Account account = parseAccount(accountNode);
-                accounts.add(account);
-            }
-
-            return accounts;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse accounts response", e);
-        }
+                .bodyToMono(AccountsResponse.class)  // Map to typed DTO
+                .map(response -> response.getResults().stream()
+                        .map(this::mapToAccount)
+                        .collect(Collectors.toList()));
     }
 
-    private Account parseAccount(JsonNode accountNode) {
+    private Account mapToAccount(AccountDto dto) {
         Account account = new Account();
-
-        account.setAccountId(accountNode.path("account_id").asText());
-        account.setDisplayName(accountNode.path("display_name").asText());
-        account.setAccountType(accountNode.path("account_type").asText());
-        account.setCurrency(accountNode.path("currency").asText());
-        account.setAccountNumber(accountNode.path("account_number").path("number").asText());
-        account.setSortCode(accountNode.path("account_number").path("sort_code").asText());
-        account.setProvider(accountNode.path("provider").path("display_name").asText());
-
+        account.setAccountId(dto.getAccountId());
+        account.setDisplayName(dto.getDisplayName());
+        account.setAccountType(dto.getAccountType());
+        account.setCurrency(dto.getCurrency());
+        account.setAccountNumber(dto.getAccountNumber().getNumber());
+        account.setSortCode(dto.getAccountNumber().getSortCode());
+        account.setProvider(dto.getProvider().getDisplayName());
         return account;
     }
 }

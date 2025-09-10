@@ -5,10 +5,11 @@ import com.example.demo.model.Account;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -18,21 +19,23 @@ public class ExpenseController {
 
     private static final Logger logger = LoggerFactory.getLogger(ExpenseController.class);
 
-    @Autowired
-    private TrueLayerService trueLayerService;
+    private final TrueLayerService trueLayerService;
 
-    /**
-     * Get user's bank accounts
-     */
+    public ExpenseController(TrueLayerService trueLayerService) {
+        this.trueLayerService = trueLayerService;
+    }
+
     @GetMapping("/accounts")
-    public ResponseEntity<?> getUserAccounts(OAuth2AuthenticationToken oauthToken) {
+    public Mono<ResponseEntity<List<Account>>> getUserAccounts(OAuth2AuthenticationToken oauthToken) {
         if (oauthToken == null) {
-            throw new IllegalStateException("User not authenticated");
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        List<Account> accounts = trueLayerService.getUserAccounts(oauthToken);
 
-        logger.info("Fetched {} accounts for user {}", accounts.size(), oauthToken.getName());
-        
-        return ResponseEntity.ok(accounts);
+        return trueLayerService.getUserAccounts(oauthToken)
+                .map(accounts -> {
+                    logger.debug("Fetched {} accounts for user {}", accounts.size(), oauthToken.getName());
+                    return ResponseEntity.ok(accounts);
+                })
+                .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 }

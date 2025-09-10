@@ -54,7 +54,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // Extract the first user from the results array
         List<Map<String, Object>> results = (List<Map<String, Object>>) responseBody.get("results");
-        if (results.isEmpty()) {
+
+        if (results == null || results.isEmpty()) {
             throw new OAuth2AuthenticationException(new OAuth2Error("empty_user_info_results"), "No user info found");
         }
 
