@@ -31,27 +31,11 @@ export class LoginComponent implements OnInit {
     }
 
     // Check if already authenticated
-    this.authService.isAuthenticated$.subscribe(isAuth => {
-      if (isAuth) {
-        this.router.navigate(['/dashboard']);
-      }
-    });
+    
   }
 
   login(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
-
-    this.authService.login().subscribe({
-      next: (response) => {
-        // Login service will handle the redirect to TrueLayer
-        console.log('Login initiated successfully');
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = 'Failed to initiate login. Please try again.';
-        console.error('Login error:', error);
-      }
-    });
+    // This will trigger the OAuth2 flow via the Spring server
+    window.location.href = '/oauth2/authorization/truelayer';;
   }
 }

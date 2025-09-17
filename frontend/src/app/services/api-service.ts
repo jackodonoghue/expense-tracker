@@ -17,10 +17,8 @@ export class ApiService {
   /**
    * Get user accounts
    */
-  getAccounts(sessionId: string): Observable<Account[]> {
-    const params = new HttpParams().set('sessionId', sessionId);
-
-    return this.http.get<Account[]>(`${this.apiUrl}/expenses/accounts`, { params })
+  getAccounts(): Observable<Account[]> {
+    return this.http.get<Account[]>(`${this.apiUrl}/expenses/accounts`)
       .pipe(
         catchError(error => {
           console.error('Failed to fetch accounts:', error);
@@ -32,9 +30,8 @@ export class ApiService {
   /**
    * Get transactions
    */
-  getTransactions(sessionId: string, accountId?: string, limit: number = 100): Observable<Transaction[]> {
+  getTransactions(accountId?: string, limit: number = 100): Observable<Transaction[]> {
     let params = new HttpParams()
-      .set('sessionId', sessionId)
       .set('limit', limit.toString());
 
     if (accountId) {
@@ -53,28 +50,11 @@ export class ApiService {
   /**
    * Get account balances
    */
-  getBalances(sessionId: string): Observable<Balance[]> {
-    const params = new HttpParams().set('sessionId', sessionId);
-
-    return this.http.get<Balance[]>(`${this.apiUrl}/expenses/balances`, { params })
+  getBalances(): Observable<Balance[]> {
+    return this.http.get<Balance[]>(`${this.apiUrl}/expenses/balances`)
       .pipe(
         catchError(error => {
           console.error('Failed to fetch balances:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
-  /**
-   * Get user information
-   */
-  getUserInfo(sessionId: string): Observable<any> {
-    const params = new HttpParams().set('sessionId', sessionId);
-
-    return this.http.get<any>(`${this.apiUrl}/expenses/info`, { params })
-      .pipe(
-        catchError(error => {
-          console.error('Failed to fetch user info:', error);
           return throwError(() => error);
         })
       );

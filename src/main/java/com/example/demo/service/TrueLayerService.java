@@ -19,24 +19,15 @@ import java.util.stream.Collectors;
 public class TrueLayerService {
 
     private final WebClient webClient;
-    private final OAuth2AuthorizedClientService authorizedClientService;
+    private final AuthService authService;
 
-    public TrueLayerService(WebClient webClient,
-                            OAuth2AuthorizedClientService authorizedClientService) {
+    public TrueLayerService(WebClient webClient, AuthService authService) {
         this.webClient = webClient;
-        this.authorizedClientService = authorizedClientService;
+        this.authService = authService;
     }
 
     public Mono<List<Account>> getUserAccounts(OAuth2AuthenticationToken oauthToken) {
-        String registrationId = oauthToken.getAuthorizedClientRegistrationId();
-        String principalName = oauthToken.getName();
-
-        OAuth2AuthorizedClient authorizedClient = authorizedClientService
-                .loadAuthorizedClient(registrationId, principalName);
-
-        if (authorizedClient == null) {
-            return Mono.error(new IllegalStateException("Authorized client not found for user: " + principalName));
-        }
+        OAuth2AuthorizedClient authorizedClient = authService.getAuthorisedUser(oauthToken);
 
         String accessToken = authorizedClient.getAccessToken().getTokenValue();
 

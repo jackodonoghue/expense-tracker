@@ -9,30 +9,38 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.example.demo.service.CustomOAuth2UserService;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    private final CustomOAuth2UserService customOAuth2UserService; // Inject your custom service
+    private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) { // Constructor injection
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
         this.customOAuth2UserService = customOAuth2UserService;
     }
 
     @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/info", "/", "/index.html", "/*.js", "/*.css", "/dashboard", "/login/**", "/oauth2/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .userInfoEndpoint(userInfo -> userInfo
-                   .userService(customOAuth2UserService)
-                )
-                .successHandler((request, response, authentication) -> response.sendRedirect("/dashboard"))
-            );
-            
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/", "/favicon.ico", "/index.html", "/*.js", "/*.css",
+                                "/login/**", "/oauth2/**")
+                        .permitAll()
+                        .anyRequest().authenticated())
+                .logout(l -> l
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                        })
+                        .deleteCookies("JSESSIONID")
+                        .permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage(("/login"))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler((request, response, authentication) -> response.sendRedirect("/dashboard")));
+
         return http.build();
     }
 }

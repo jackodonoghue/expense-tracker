@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
@@ -13,6 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
+import { User } from '../../models/user.interface';
 
 @Component({
   selector: 'app-dashboard',
@@ -36,27 +37,16 @@ export class Dashboard implements OnInit, OnDestroy {
   isLoading = false;
   errorMessage = '';
   displayedColumns: string[] = ['timestamp', 'description', 'category', 'amount'];
+  user?: User;
 
   private destroy$ = new Subject<void>();
-
-  constructor(
-    private authService: AuthService,
-    private apiService: ApiService,
-    private router: Router
-  ) {}
-
+  
+  private authService: AuthService = inject(AuthService);
+  private apiService: ApiService = inject(ApiService);
+  private router: Router = inject(Router);
+  
   ngOnInit(): void {
-    // Verify authentication
-    this.authService.isAuthenticated$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(isAuth => {
-        if (!isAuth) {
-          this.router.navigate(['/login']);
-          return;
-        }
-      });
-
-    // Load initial data
+    this.authService.getUserInfo().subscribe((user: User) => {this.user = user});
     this.loadDashboardData();
   }
 
@@ -66,27 +56,21 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   loadDashboardData(): void {
-    const sessionId = this.authService.sessionId;
-    if (!sessionId) {
-      this.router.navigate(['/login']);
-      return;
-    }
-
     this.isLoading = true;
     this.errorMessage = '';
 
     // Load all data in parallel
     forkJoin({
-      accounts: this.apiService.getAccounts(sessionId),
-      balances: this.apiService.getBalances(sessionId),
-      transactions: this.apiService.getTransactions(sessionId)
+      accounts: this.apiService.getAccounts(),
+      // balances: this.apiService.getBalances(),
+      // transactions: this.apiService.getTransactions()
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (data) => {
         this.accounts = data.accounts;
-        this.balances = data.balances;
-        this.transactions = data.transactions;
+        // this.balances = data.balances;
+        // this.transactions = data.transactions;
         this.isLoading = false;
       },
       error: (error) => {
@@ -106,15 +90,6 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        console.error('Logout error:', error);
-        // Navigate to login anyway
-        this.router.navigate(['/login']);
-      }
-    });
+    this.authService.logout().subscribe();
   }
 }
