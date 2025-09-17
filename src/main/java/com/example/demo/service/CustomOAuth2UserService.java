@@ -36,8 +36,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken.getTokenValue());
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
+        
         ResponseEntity<Map> response = webClient.get()
                 .uri(userInfoUri)
                 .headers(httpHeaders -> httpHeaders.addAll(headers))
@@ -61,7 +60,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         Map<String, Object> userInfo = results.get(0);
 
-        // Create a flat map with attributes you want to expose in OAuth2User
+        // Create a flat map with attributes to expose in OAuth2User
         Map<String, Object> attributes = Map.of(
                 "full_name", userInfo.get("full_name"),
                 "emails", userInfo.get("emails"),
@@ -69,7 +68,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 "addresses", userInfo.get("addresses"),
                 "update_timestamp", userInfo.get("update_timestamp"));
 
-        // Use full_name as the key for the user name attribute (adjust as needed)
         return new DefaultOAuth2User(
                 Collections.singletonList(() -> "ROLE_USER"),
                 attributes,
