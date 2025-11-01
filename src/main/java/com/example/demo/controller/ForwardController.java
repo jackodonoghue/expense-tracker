@@ -1,14 +1,17 @@
 package com.example.demo.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
-@Controller
+@RestController
 public class ForwardController {
 
-    @RequestMapping(value = "/{path:[^\\.]*}")
-    public String forward() {
-        // Forward any path without a dot (not a file) to index.html
-        return "forward:/index.html";
+    @GetMapping(value = "/{path:[^\\.]*}", produces = MediaType.TEXT_HTML_VALUE)
+    public Mono<Resource> forward() {
+        return Mono.just(new ClassPathResource("static/index.html"));
     }
 }

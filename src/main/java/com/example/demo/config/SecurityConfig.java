@@ -1,45 +1,35 @@
 package com.example.demo.config;
 
+import com.example.demo.service.CustomOAuth2UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.web.SecurityFilterChain;
-
-import com.example.demo.service.CustomOAuth2UserService;
-
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SecurityConfig {
-    private final CustomOAuth2UserService customOAuth2UserService;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-        this.customOAuth2UserService = customOAuth2UserService;
-    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/", "/favicon.ico", "/index.html", "/*.js", "/*.css",
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .authorizeExchange(exchange -> exchange
+                        .pathMatchers("/", "/favicon.ico", "/index.html", "/*.js", "/*.css",
                                 "/login/**", "/oauth2/**")
                         .permitAll()
-                        .anyRequest().authenticated())
-                .logout(l -> l
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
-                        })
-                        .deleteCookies("JSESSIONID")
-                        .permitAll())
+                        .anyExchange().authenticated())
+                .logout(logout -> logout
+                        .logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.OK)))
                 .oauth2Login(oauth2 -> oauth2
-                        .loginPage(("/login"))
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
-                        .successHandler((request, response, authentication) -> response.sendRedirect("/dashboard")));
+                        .authenticationSuccessHandler((webFilterExchange, authentication) -> {
+                            webFilterExchange.getExchange().getResponse().setStatusCode(HttpStatus.FOUND);
+                            webFilterExchange.getExchange().getResponse().getHeaders().add("Location", "/dashboard");
+                            return webFilterExchange.getChain().filter(webFilterExchange.getExchange());
+                        }));
 
         return http.build();
     }

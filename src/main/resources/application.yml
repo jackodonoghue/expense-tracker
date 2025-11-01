@@ -4,17 +4,17 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.security.oauth2.client: DEBUG
     org.springframework.web.client.RestClient: DEBUG
-  
+
 spring:
   security:
     oauth2:
       client:
         registration:
           truelayer:
-            client-id: ${TRUELAYER_CLIENT_ID} 
+            client-id: ${TRUELAYER_CLIENT_ID}
             client-secret: ${TRUELAYER_CLIENT_SECRET}
             authorization-grant-type: authorization_code
-            redirect-uri: https://d55b7d7e9f4b.ngrok-free.app/login/oauth2/code/truelayer
+            redirect-uri: https://9ee7962c12a1.ngrok-free.app/login/oauth2/code/truelayer?providers=uk-cs-mock%20uk-ob-all%20uk-oauth-all
             scope: info,accounts,balance,transactions,offline_access
         provider:
           truelayer:
