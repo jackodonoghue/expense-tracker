@@ -14,7 +14,7 @@ spring:
             client-id: ${TRUELAYER_CLIENT_ID}
             client-secret: ${TRUELAYER_CLIENT_SECRET}
             authorization-grant-type: authorization_code
-            redirect-uri: https://9ee7962c12a1.ngrok-free.app/login/oauth2/code/truelayer?providers=uk-cs-mock%20uk-ob-all%20uk-oauth-all
+            redirect-uri: http://localhost:8080/login/oauth2/code/truelayer
             scope: info,accounts,balance,transactions,offline_access
         provider:
           truelayer:
@@ -22,6 +22,7 @@ spring:
             token-uri: https://auth.truelayer-sandbox.com/connect/token
             user-info-uri: ${user-info-uri}
             jwk-set-uri: https://auth.truelayer-sandbox.com/.well-known/jwks
+            user-name-attribute: full_name
 server:
   servlet:
     session:
