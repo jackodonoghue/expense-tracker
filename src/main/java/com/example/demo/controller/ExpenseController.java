@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.model.truelayer.Transaction;
 import com.example.demo.service.TrueLayerService;
 import com.example.demo.model.Account;
 
@@ -23,6 +24,30 @@ public class ExpenseController {
 
     public ExpenseController(TrueLayerService trueLayerService) {
         this.trueLayerService = trueLayerService;
+    }
+
+    @GetMapping("/transactions")
+    public Mono<ResponseEntity<List<com.example.demo.model.truelayer.Transaction>>> getTransactions(
+            OAuth2AuthenticationToken oauthToken,
+            @RequestParam(required = false) String accountId,
+            @RequestParam(defaultValue = "100") int limit) {
+        if (oauthToken == null) {
+            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+        }
+
+        Mono<List<Transaction>> transactionsMono;
+        if (accountId == null || accountId.isEmpty()) {
+            transactionsMono = trueLayerService.getAllTransactions(oauthToken);
+        } else {
+            transactionsMono = trueLayerService.getTransactions(oauthToken, accountId);
+        }
+
+        return transactionsMono
+                .map(transactions -> {
+                    logger.debug("Fetched {} transactions", transactions.size());
+                    return ResponseEntity.ok(transactions);
+                })
+                .defaultIfEmpty(ResponseEntity.noContent().build());
     }
 
     @GetMapping("/accounts")

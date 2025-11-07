@@ -36,7 +36,7 @@ export class Dashboard implements OnInit, OnDestroy {
   balances: Balance[] = [];
   isLoading = false;
   errorMessage = '';
-  displayedColumns: string[] = ['timestamp', 'description', 'category', 'amount'];
+  displayedColumns: string[] = ['timestamp', 'description', 'transaction_category', 'amount'];
   user?: User;
 
   private destroy$ = new Subject<void>();
@@ -63,14 +63,14 @@ export class Dashboard implements OnInit, OnDestroy {
     forkJoin({
       accounts: this.apiService.getAccounts(),
       // balances: this.apiService.getBalances(),
-      // transactions: this.apiService.getTransactions()
+      transactions: this.apiService.getTransactions()
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe({
       next: (data) => {
         this.accounts = data.accounts;
         // this.balances = data.balances;
-        // this.transactions = data.transactions;
+        this.transactions = data.transactions;
         this.isLoading = false;
       },
       error: (error) => {

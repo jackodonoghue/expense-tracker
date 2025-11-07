@@ -1,10 +1,10 @@
 export interface Transaction {
-  transactionId: string;
-  accountId: string;
+  transaction_id: string;
+  timestamp: Date;
+  description: string;
   amount: number;
   currency: string;
-  description: string;
-  transactionType: string;
-  transactionCategory: string;
-  timestamp: Date;
+  transaction_type: string;
+  transaction_category: string;
+  merchant_name: string;
 }

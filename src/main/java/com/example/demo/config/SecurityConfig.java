@@ -15,7 +15,6 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.ReactiveOAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.core.Authentication;
 import org.springframework.http.ResponseCookie;
 import java.time.Duration;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ public class SecurityConfig {
         @Bean
         public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
                 http
-                        .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                                .csrf(ServerHttpSecurity.CsrfSpec::disable)
 
                                 .authorizeExchange(authorize -> authorize
                                                 .pathMatchers("/", "/favicon.ico", "/index.html", "/*.js", "/*.css",
