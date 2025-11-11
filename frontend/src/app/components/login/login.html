@@ -7,9 +7,11 @@
         </mat-card-header>
 
         <mat-card-content>
-          <div *ngIf="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </div>
+          @if (errorMessage) {
+            <div class="error-message">
+              {{ errorMessage }}
+            </div>
+          }
 
           <div class="bank-info">
             <h3>Supported Banks</h3>
@@ -31,8 +33,11 @@
             (click)="login()" 
             [disabled]="isLoading"
             class="login-btn">
-            <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
-            <span *ngIf="!isLoading">Connect Your Bank Account</span>
+            @if (isLoading) {
+              <mat-spinner diameter="20"></mat-spinner>
+            } @else {
+              <span>Connect Your Bank Account</span>
+            }
           </button>
         </mat-card-actions>
       </mat-card>

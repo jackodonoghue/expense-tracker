@@ -15,98 +15,76 @@
     </div>
   </header>
 
-  <!-- <div class="accounts">
-    <div *ngIf="balances.length === 0" class="no-data">
-      No account balances available
-    </div>
-    <div class="balances-grid" *ngIf="balances.length > 0">
-      <mat-card *ngFor="let balance of balances" class="balance-card">
-        <mat-card-header>
-          <mat-card-title>{{ balance.accountName }}</mat-card-title>
-          <mat-card-subtitle>{{ balance.currency }}</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="balance-info">
-            <div class="balance-item">
-              <span class="label">Current:</span>
-              <span class="amount" [class.positive]="balance.current >= 0" [class.negative]="balance.current < 0">
-                {{ balance.currency }} {{ balance.current | number:'1.2-2' }}
-              </span>
-            </div>
-            <div class="balance-item">
-              <span class="label">Available:</span>
-              <span class="amount">{{ balance.currency }} {{ balance.available | number:'1.2-2' }}</span>
-            </div>
-            <div class="balance-item" *ngIf="balance.overdraft > 0">
-              <span class="label">Overdraft:</span>
-              <span class="amount">{{ balance.currency }} {{ balance.overdraft | number:'1.2-2' }}</span>
-            </div>
-          </div>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  </div> -->
-
   <!-- Transactions Tab -->
   <div class="transactions-filter-container">
     <mat-form-field appearance="fill">
       <mat-label>Accounts</mat-label>
       <mat-select [formControl]="accountsControl" multiple>
-        <mat-option *ngFor="let account of accounts" [value]="account.accountId">{{account.displayName}}</mat-option>
+        @for (account of accounts; track account.accountId) {
+          <mat-option [value]="account.accountId">{{account.displayName}}</mat-option>
+        }
       </mat-select>
     </mat-form-field>
     <button mat-raised-button color="primary" (click)="getTransactions()"
       [disabled]="accountsControl.value?.length === 0">View Transactions</button>
   </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
-  </div>
+  @if (errorMessage) {
+    <div class="error-message">
+      {{ errorMessage }}
+    </div>
+  }
 
-  <div *ngIf="isLoading" class="loading-container">
-    <mat-spinner></mat-spinner>
-    <p>Loading your banking data...</p>
-  </div>
+  @if (isLoading) {
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Loading your banking data...</p>
+    </div>
+  }
 
-  <div *ngIf="transactions.length === 0" class="no-data">
-    No transactions available
-  </div>
+  @if (transactions.length === 0) {
+    <div class="no-data">
+      No transactions available
+    </div>
+  }
 
 
-  <div *ngIf="transactions.length > 0" class="transactions-container">
-    <table mat-table [dataSource]="transactions" class="transactions-table">
-      <ng-container matColumnDef="timestamp">
-        <th mat-header-cell *matHeaderCellDef>Date</th>
-        <td mat-cell *matCellDef="let transaction">
-          {{ transaction.timestamp | date:'short' }}
-        </td>
-      </ng-container>
+  @if (transactions.length > 0) {
+    <div class="transactions-container">
+      <table mat-table [dataSource]="transactions" class="transactions-table">
+        <ng-container matColumnDef="timestamp">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let transaction">
+            {{ transaction.timestamp | date:'short' }}
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef>Description</th>
-        <td mat-cell *matCellDef="let transaction">
-          {{ transaction.description }}
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td mat-cell *matCellDef="let transaction">
+            {{ transaction.description }}
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="transaction_category">
-        <th mat-header-cell *matHeaderCellDef>Category</th>
-        <td mat-cell *matCellDef="let transaction">
-          {{ transaction.transaction_category }}
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="transaction_category">
+          <th mat-header-cell *matHeaderCellDef>Category</th>
+          <td mat-cell *matCellDef="let transaction">
+            {{ transaction.transaction_category }}
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="amount">
-        <th mat-header-cell *matHeaderCellDef>Amount</th>
-        <td mat-cell *matCellDef="let transaction">
-          <span class="amount" [class.positive]="transaction.amount >= 0" [class.negative]="transaction.amount < 0">
-            {{ transaction.currency }} {{ transaction.amount | number:'1.2-2' }}
-          </span>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let transaction">
+            <span class="amount" [class.positive]="transaction.amount >= 0" [class.negative]="transaction.amount < 0">
+              {{ transaction.currency }} {{ transaction.amount | number:'1.2-2' }}
+            </span>
+          </td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-    </table>
-  </div>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  }
 </div>

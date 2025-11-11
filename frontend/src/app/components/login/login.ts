@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
@@ -17,10 +17,8 @@ export class LoginComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
 
-  constructor(
-    private authService: AuthService,
-    private router: Router
-  ) {}
+  private authService: AuthService = inject(AuthService);
+  private router: Router = inject(Router);
 
   ngOnInit(): void {
     // Check for error in URL params
