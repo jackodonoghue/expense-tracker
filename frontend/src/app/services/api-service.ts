@@ -30,12 +30,12 @@ export class ApiService {
   /**
    * Get transactions
    */
-  getTransactions(accountId?: string, limit: number = 100): Observable<Transaction[]> {
+  getTransactions(accountIds?: string[], limit: number = 100): Observable<Transaction[]> {
     let params = new HttpParams()
       .set('limit', limit.toString());
 
-    if (accountId) {
-      params = params.set('accountId', accountId);
+    if (accountIds && accountIds.length > 0) {
+      params = params.set('account_id', accountIds.join(','));
     }
 
     return this.http.get<Transaction[]>(`${this.apiUrl}/expenses/transactions`, { params })
