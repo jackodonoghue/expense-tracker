@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
 import java.util.List;
 
 @RestController
@@ -29,21 +30,22 @@ public class ExpenseController {
     @GetMapping("/transactions")
     public Mono<ResponseEntity<List<com.example.demo.model.truelayer.Transaction>>> getTransactions(
             OAuth2AuthenticationToken oauthToken,
-            @RequestParam(required = false) String accountId,
+            @RequestParam(name = "account_id", required = false) List<String> accountIds,
             @RequestParam(defaultValue = "100") int limit) {
         if (oauthToken == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
 
         Mono<List<Transaction>> transactionsMono;
-        if (accountId == null || accountId.isEmpty()) {
+        if (accountIds == null || accountIds.isEmpty()) {
             transactionsMono = trueLayerService.getAllTransactions(oauthToken);
         } else {
-            transactionsMono = trueLayerService.getTransactions(oauthToken, accountId);
+            transactionsMono = trueLayerService.getTransactionsForAccounts(oauthToken, accountIds);
         }
 
         return transactionsMono
                 .map(transactions -> {
+                    transactions.sort(Comparator.comparing(Transaction::getTimestamp).reversed());
                     logger.debug("Fetched {} transactions", transactions.size());
                     return ResponseEntity.ok(transactions);
                 })

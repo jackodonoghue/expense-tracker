@@ -18,6 +18,15 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.example.demo.model.truelayer.Transaction;
+
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 class ExpenseControllerTest {
     @Mock
     private TrueLayerService trueLayerService;
@@ -31,6 +40,66 @@ class ExpenseControllerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void getTransactions_returnsUnauthorized_whenNoToken() {
+        Mono<ResponseEntity<List<Transaction>>> response = expenseController.getTransactions(null, null, 100);
+        ResponseEntity<List<Transaction>> entity = response.block();
+        assertEquals(HttpStatus.UNAUTHORIZED, entity.getStatusCode());
+        assertNull(entity.getBody());
+    }
+
+    @Test
+    void getTransactions_returnsAllTransactions_whenNoAccountIds() {
+        Transaction t1 = mock(Transaction.class);
+        Transaction t2 = mock(Transaction.class);
+        when(t1.getTimestamp()).thenReturn(new Date());
+        when(t2.getTimestamp()).thenReturn(new Date());
+        List<Transaction> transactions = Arrays.asList(t1, t2);
+        when(trueLayerService.getAllTransactions(oauthToken)).thenReturn(Mono.just(transactions));
+
+        Mono<ResponseEntity<List<Transaction>>> response = expenseController.getTransactions(oauthToken, null, 100);
+        ResponseEntity<List<Transaction>> entity = response.block();
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(transactions, entity.getBody());
+        verify(trueLayerService, times(1)).getAllTransactions(oauthToken);
+        verify(trueLayerService, never()).getTransactionsForAccounts(any(), any());
+    }
+
+    @Test
+    void getTransactions_returnsTransactionsForAccountIds_whenAccountIdsProvided() {
+        List<String> accountIds = Arrays.asList("acc1", "acc2");
+        Transaction t1 = mock(Transaction.class);
+        Transaction t2 = mock(Transaction.class);
+        when(t1.getTimestamp()).thenReturn(new Date());
+        when(t2.getTimestamp()).thenReturn(new Date());
+        List<Transaction> transactions = Arrays.asList(t1, t2);
+        when(trueLayerService.getTransactionsForAccounts(oauthToken, accountIds)).thenReturn(Mono.just(transactions));
+
+        Mono<ResponseEntity<List<Transaction>>> response = expenseController.getTransactions(oauthToken, accountIds, 100);
+        ResponseEntity<List<Transaction>> entity = response.block();
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(transactions, entity.getBody());
+        verify(trueLayerService, never()).getAllTransactions(oauthToken);
+        verify(trueLayerService, times(1)).getTransactionsForAccounts(oauthToken, accountIds);
+    }
+
+    @Test
+    void getTransactions_returnsSortedTransactions() {
+        Transaction t1 = new Transaction();
+        t1.setTimestamp(new Date(1000));
+        Transaction t2 = new Transaction();
+        t2.setTimestamp(new Date(2000));
+        List<Transaction> transactions = Arrays.asList(t1, t2);
+
+        when(trueLayerService.getAllTransactions(oauthToken)).thenReturn(Mono.just(transactions));
+
+        Mono<ResponseEntity<List<Transaction>>> response = expenseController.getTransactions(oauthToken, null, 100);
+        ResponseEntity<List<Transaction>> entity = response.block();
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals(t2, entity.getBody().get(0));
+        assertEquals(t1, entity.getBody().get(1));
     }
 
     @Test

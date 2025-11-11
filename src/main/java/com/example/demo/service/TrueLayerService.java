@@ -63,6 +63,13 @@ public class TrueLayerService {
                 });
     }
 
+    public Mono<List<Transaction>> getTransactionsForAccounts(OAuth2AuthenticationToken oauthToken, List<String> accountIds) {
+        return Flux.fromIterable(accountIds)
+                .flatMap(accountId -> getTransactions(oauthToken, accountId))
+                .flatMap(Flux::fromIterable)
+                .collectList();
+    }
+
     private Account mapToAccount(AccountDto dto) {
         Account account = new Account();
         account.setAccountId(dto.getAccountId());
