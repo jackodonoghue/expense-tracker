@@ -27,6 +27,7 @@ export class AuthService {
 	logout(): Observable<AuthResponse> {
 		return this.http.post<AuthResponse>(`${this.apiUrl}/logout`, {}).pipe(
 			tap(() => {
+
 				this.router.navigate(['/login'], { queryParams: { logout: '' }, replaceUrl: true });
 			}),
 			catchError(error => {
